@@ -1,4 +1,21 @@
 from tkinter import *
+import pandas as pd
+import random
+
+# Read Afrikaans words file and save values to list of dictionaries called afr_words
+with open('afr_words.csv', 'r') as datafile:
+    afr_words_df = pd.read_csv(datafile)
+    # Set the first column to the index column
+    afr_words_df.set_index('Unnamed: 0', inplace=True)
+    afr_words = afr_words_df.to_dict(orient='records')
+
+
+# Pick random word in afr_words and display the word
+def pick_random_word():
+    global current_word_txt, language_txt
+    random_afr_word = random.choice(afr_words)['Afrikaans']
+    canvas.itemconfig(current_word_txt, text=random_afr_word)
+
 
 # -------------------- UI SETUP -------------------- #
 # Initialize window
@@ -22,10 +39,10 @@ yes_img = PhotoImage(file='images/right.png')
 no_img = PhotoImage(file='images/wrong.png')
 
 # Add Yes / No buttons
-yes_btn = Button(image=yes_img, bg='#B1DDC6', borderwidth=0, highlightthickness=0)
+yes_btn = Button(image=yes_img, bg='#B1DDC6', borderwidth=0, highlightthickness=0, command=pick_random_word)
 yes_btn.grid(row=2, column=1)
 
-no_btn = Button(image=no_img, bg='#B1DDC6', borderwidth=0, highlightthickness=0)
+no_btn = Button(image=no_img, bg='#B1DDC6', borderwidth=0, highlightthickness=0, command=pick_random_word)
 no_btn.grid(row=2, column=2)
 
 # Keep screen open
