@@ -6,14 +6,16 @@ import random
 class FlashcardApp:
     def __init__(self):
         # -------------------- Initialize Variables -------------------- #
-        # If this is the first time running the program, get information from afr_words.csv.
-        # Otherwise, read from file words_to_learn.csv which will be created at the end of the program
+        # If this is first time running the program, get information from afr_words.csv and create words_to_learn.csv.
+        # Otherwise, read from file words_to_learn.csv which is updated after every word
         try:
-            with open('words_to_learn.csv', 'r') as data:
-                self.afr_words = pd.read_csv(data).to_dict(orient='records')
-        except FileNotFoundError:
-            with open('afr_words.csv', 'r') as data:
-                self.afr_words = pd.read_csv(data).to_dict(orient='records')
+            self.afr_words = pd.read_csv('words_to_learn.csv').to_dict(orient='records')
+        except (FileNotFoundError, pd.errors.EmptyDataError):
+            afr_words_df = pd.read_csv('afr_words.csv')
+
+            # Initialize words_to_learn.csv and set to afr_words.csv
+            afr_words_df.to_csv('words_to_learn.csv', index=False)
+            self.afr_words = afr_words_df.to_dict(orient='records')
 
         # Initialize random_word as random English/Afrikaans word pair
         self.random_word = random.choice(self.afr_words)
@@ -55,7 +57,7 @@ class FlashcardApp:
         self.window.mainloop()
 
     def show_afr_word(self) -> None:
-        """Pick random Afrikaans word and display the word"""
+        """Picks random Afrikaans word and displays the word. After 3 seconds, displays the English translation."""
         # Get random word from afr_words
         self.random_word = random.choice(self.afr_words)
 
@@ -71,6 +73,7 @@ class FlashcardApp:
         self.window.after(ms=3000, func=self.show_eng_word)
 
     def show_eng_word(self):
+        """Displays the English translation of the current Afrikaans word"""
         # Get translation of random Afrikaans word
         random_eng_word = self.random_word['English']
 
@@ -80,6 +83,14 @@ class FlashcardApp:
         self.card_img.config(file='images/card_back.png')
 
     def correct_word(self):
+        """Removes current word from words_to_learn.csv file."""
+        # Remove word from list of words
+        self.afr_words.remove(self.random_word)
+        # Rewrite words_to_learn.csv file
+        new_afr_df = pd.DataFrame(self.afr_words)
+        with open('words_to_learn.csv', 'w'):
+            new_afr_df.to_csv('words_to_learn.csv', index=False)
+        # Show next word
         self.show_afr_word()
 
 
